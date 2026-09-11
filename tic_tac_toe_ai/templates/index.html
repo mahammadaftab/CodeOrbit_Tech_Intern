@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic-Tac-Toe AI — Rule-Based & Minimax</title>
+  <meta name="description" content="Play Tic-Tac-Toe against AI featuring Easy, Rule-Based Medium, and Unbeatable Minimax difficulty levels.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+</head>
+<body>
+  <!-- Ambient background lighting blobs -->
+  <div class="ambient-glow glow-cyan"></div>
+  <div class="ambient-glow glow-magenta"></div>
+
+  <div class="app-wrapper">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="logo-box">
+          <span class="logo-x">X</span>
+          <span class="logo-divider"></span>
+          <span class="logo-o">O</span>
+        </div>
+        <div>
+          <h1 class="app-title">Tic-Tac-Toe AI</h1>
+          <p class="app-subtitle">Minimax Algorithm & Rule-Based Opponent</p>
+        </div>
+      </div>
+
+      <div class="header-tools">
+        <button id="btn-sound" class="btn-tool" title="Toggle Sound Chimes" aria-label="Toggle sound">
+          <svg id="icon-sound-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          </svg>
+          <svg id="icon-sound-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="hidden">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <line x1="23" y1="9" x2="17" y2="15"/>
+            <line x1="17" y1="9" x2="23" y2="15"/>
+          </svg>
+        </button>
+        <button id="btn-reset-scores" class="btn-tool" title="Reset Scoreboard" aria-label="Reset score">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Game Board Container -->
+    <main class="game-layout">
+      <!-- Difficulty Selector Segment -->
+      <section class="difficulty-section">
+        <div class="difficulty-label">AI Difficulty:</div>
+        <div class="difficulty-toggle" role="group" aria-label="Difficulty selection">
+          <button class="diff-btn" data-level="easy" title="Casual play, makes random moves">
+            Easy
+          </button>
+          <button class="diff-btn" data-level="medium" title="Rule-based heuristic: blocks and wins">
+            Medium
+          </button>
+          <button class="diff-btn active" data-level="hard" title="Optimal Minimax: mathematically unbeatable">
+            Hard (Minimax)
+          </button>
+        </div>
+      </section>
+
+      <!-- Scoreboard -->
+      <section class="scoreboard">
+        <div class="score-card player-card">
+          <div class="score-player-tag">
+            <span class="mark-preview-x">X</span>
+            <span>You</span>
+          </div>
+          <div class="score-value" id="score-player">0</div>
+        </div>
+
+        <div class="score-card draw-card">
+          <div class="score-player-tag">
+            <span class="draw-icon">🤝</span>
+            <span>Draws</span>
+          </div>
+          <div class="score-value" id="score-draw">0</div>
+        </div>
+
+        <div class="score-card ai-card">
+          <div class="score-player-tag">
+            <span class="mark-preview-o">O</span>
+            <span>AI Bot</span>
+          </div>
+          <div class="score-value" id="score-ai">0</div>
+        </div>
+      </section>
+
+      <!-- Status Announcement Banner -->
+      <div class="status-banner" id="status-banner">
+        <span class="status-dot"></span>
+        <span class="status-text" id="status-text">Your Turn (X) — Pick a cell</span>
+      </div>
+
+      <!-- 3x3 Game Board Grid -->
+      <div class="grid-wrapper">
+        <div class="board-grid" id="board-grid">
+          <!-- 9 interactive cells (0-indexed) -->
+          <button class="cell" data-index="0" aria-label="Square 1"></button>
+          <button class="cell" data-index="1" aria-label="Square 2"></button>
+          <button class="cell" data-index="2" aria-label="Square 3"></button>
+          <button class="cell" data-index="3" aria-label="Square 4"></button>
+          <button class="cell" data-index="4" aria-label="Square 5"></button>
+          <button class="cell" data-index="5" aria-label="Square 6"></button>
+          <button class="cell" data-index="6" aria-label="Square 7"></button>
+          <button class="cell" data-index="7" aria-label="Square 8"></button>
+          <button class="cell" data-index="8" aria-label="Square 9"></button>
+        </div>
+
+        <!-- SVG Line Overlay for Animated Winning Strike-Through -->
+        <svg class="strike-svg" id="strike-svg" viewBox="0 0 300 300">
+          <line id="strike-line" x1="0" y1="0" x2="0" y2="0" class="strike-line hidden"/>
+        </svg>
+      </div>
+
+      <!-- Action Controls -->
+      <section class="actions-section">
+        <button id="btn-new-game" class="btn-primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+          </svg>
+          New Game
+        </button>
+        <button id="btn-ai-first" class="btn-secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon">
+            <rect x="3" y="8" width="18" height="12" rx="4"/>
+            <circle cx="8" cy="13" r="1.5" fill="currentColor"/>
+            <circle cx="16" cy="13" r="1.5" fill="currentColor"/>
+          </svg>
+          Let AI Start First
+        </button>
+      </section>
+
+      <!-- Educational AI Details Card -->
+      <section class="info-accordion">
+        <div class="info-card">
+          <div class="info-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="info-icon">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            How the AI Decides Its Moves
+          </div>
+          <div class="info-body">
+            <div class="diff-explainer">
+              <strong>1. Easy:</strong> Plays randomly across available squares without checking winning lines.
+            </div>
+            <div class="diff-explainer">
+              <strong>2. Medium (Rule-Based):</strong> Evaluates predefined tactical heuristics:
+              <br/>• <em>Priority 1:</em> If AI has 2 in a row, take the 3rd to win immediately.
+              <br/>• <em>Priority 2:</em> If Player has 2 in a row, block the winning cell.
+              <br/>• <em>Priority 3:</em> Control center (cell 5), then corners, then edges.
+            </div>
+            <div class="diff-explainer">
+              <strong>3. Hard (Minimax):</strong> Recursively evaluates every possible future move branch. Scores terminal states (+10 for AI win, -10 for Player win, 0 for draw) discounted by tree depth. With optimal play, the AI is <em>mathematically impossible to beat</em>.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
