@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Classifier – MobileNetV2</title>
+  <meta name="description" content="Classify images using a pretrained MobileNetV2 model trained on ImageNet-1000. Upload any image to see the top-5 predictions." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <!-- ── Background ── -->
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-orb orb-1" aria-hidden="true"></div>
+  <div class="bg-orb orb-2" aria-hidden="true"></div>
+
+  <!-- ── Header ── -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">🔍</span>
+        <div class="logo-text">
+          <span class="logo-title">Image Classifier</span>
+          <span class="logo-sub">MobileNetV2 · ImageNet-1000</span>
+        </div>
+      </div>
+      <button id="btn-info" class="btn-outline" aria-label="How it works">
+        How it Works
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Main ── -->
+  <main class="main-layout">
+
+    <!-- Upload Panel -->
+    <section class="card upload-card" id="upload-section">
+      <h2 class="card-title">Upload an Image</h2>
+      <p class="card-sub">Drag & drop or click to select · JPG, PNG, WEBP supported</p>
+
+      <div class="drop-zone" id="drop-zone" tabindex="0" role="button"
+           aria-label="Click or drag an image here to upload">
+        <div class="drop-content" id="drop-content">
+          <div class="drop-icon">🖼️</div>
+          <p class="drop-label">Drop image here</p>
+          <p class="drop-hint">or click to browse</p>
+        </div>
+        <img id="preview-img" class="preview-img hidden" alt="Preview of selected image" />
+        <input type="file" id="file-input" accept="image/*" class="sr-only"
+               aria-label="File input for image classification" />
+      </div>
+
+      <div class="upload-actions">
+        <button id="btn-classify" class="btn-primary" disabled
+                aria-label="Classify the selected image">
+          <span class="btn-icon">✨</span> Classify Image
+        </button>
+        <button id="btn-reset" class="btn-ghost" aria-label="Reset and clear image">
+          Reset
+        </button>
+      </div>
+
+      <!-- Progress -->
+      <div id="progress-area" class="progress-area hidden" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <p id="progress-label" class="progress-label">Loading model …</p>
+      </div>
+
+      <!-- Error -->
+      <div id="error-box" class="error-box hidden" role="alert" aria-live="assertive">
+        <span class="error-icon">⚠️</span>
+        <span id="error-msg"></span>
+      </div>
+    </section>
+
+    <!-- Results Panel -->
+    <section class="card results-card hidden" id="results-section"
+             aria-label="Classification results">
+      <div class="results-image-row">
+        <img id="result-img" class="result-img" alt="Classified image" />
+        <div class="top-prediction">
+          <div class="pred-badge" id="pred-badge">🏷️</div>
+          <p class="pred-top-label" id="pred-top-label">–</p>
+          <p class="pred-top-score" id="pred-top-score">–</p>
+        </div>
+      </div>
+
+      <h3 class="results-sub-title">Top-5 Predictions</h3>
+      <ul class="predictions-list" id="predictions-list" aria-label="Top 5 predicted labels">
+      </ul>
+
+      <div class="results-meta">
+        <span class="meta-pill">Model: MobileNetV2</span>
+        <span class="meta-pill">Dataset: ImageNet-1000</span>
+        <span class="meta-pill" id="meta-file">–</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── How it Works Modal ── -->
+  <div class="modal-overlay hidden" id="modal-overlay" role="dialog"
+       aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-box">
+      <button class="modal-close" id="modal-close" aria-label="Close modal">✕</button>
+      <h2 id="modal-title" class="modal-title">How the Model Works</h2>
+      <div class="modal-body">
+        <div class="model-flow">
+          <div class="flow-step">
+            <span class="flow-icon">🖼️</span>
+            <div>
+              <strong>Input Image</strong>
+              <p>Resized to 224×224 pixels and normalized.</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-icon">📐</span>
+            <div>
+              <strong>Convolutional Layers</strong>
+              <p>Early layers detect <em>edges</em> and <em>colors</em>.</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-icon">🧩</span>
+            <div>
+              <strong>Deeper Layers</strong>
+              <p>Middle layers detect <em>textures</em> and <em>shapes</em>.</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-icon">🏷️</span>
+            <div>
+              <strong>Output Layer</strong>
+              <p>Final layer outputs probabilities for all 1,000 ImageNet classes.</p>
+            </div>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step">
+            <span class="flow-icon">✅</span>
+            <div>
+              <strong>Prediction</strong>
+              <p>The class with the highest score is returned as the label.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-callout">
+          <strong>Why MobileNetV2?</strong><br />
+          It's a tiny (~14 MB) Convolutional Neural Network designed for speed.
+          It uses <em>depthwise separable convolutions</em> — a clever trick that
+          achieves nearly the same accuracy as larger models while being
+          8× smaller and much faster. Originally designed to run <em>on phones</em>!
+        </div>
+
+        <div class="info-callout info-callout--green">
+          <strong>What is a Pretrained Model?</strong><br />
+          Researchers trained MobileNetV2 for weeks on 1.4 million images
+          (ImageNet dataset). All that "knowledge" is stored in the model's
+          weights. We simply load those weights and run new images through
+          the same learned filters — <em>no training needed on our end</em>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Footer ── -->
+  <footer class="site-footer">
+    <p>Image Classifier · Powered by <strong>HuggingFace Transformers</strong> &amp; <strong>PyTorch</strong></p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
